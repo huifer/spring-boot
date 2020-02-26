@@ -2020,10 +2020,11 @@ The auto-configuration adds the following features on top of Spring's defaults:
 * Custom `Favicon` support (covered <<boot-features-spring-mvc-favicon,later in this document>>).
 * Automatic use of a `ConfigurableWebBindingInitializer` bean (covered <<boot-features-spring-mvc-web-binding-initializer,later in this document>>).
 
-If you want to keep Spring Boot MVC features and you want to add additional {spring-framework-docs}web.html#mvc[MVC configuration] (interceptors, formatters, view controllers, and other features), you can add your own `@Configuration` class of type `WebMvcConfigurer` but *without* `@EnableWebMvc`.
-If you wish to provide custom instances of `RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`, or `ExceptionHandlerExceptionResolver`, you can declare a `WebMvcRegistrationsAdapter` instance to provide such components.
+If you want to keep those Spring Boot MVC customizations and make more {spring-framework-docs}web.html#mvc[MVC customizations] (interceptors, formatters, view controllers, and other features), you can add your own `@Configuration` class of type `WebMvcConfigurer` but *without* `@EnableWebMvc`.
 
-If you want to take complete control of Spring MVC, you can add your own `@Configuration` annotated with `@EnableWebMvc`.
+If you want to provide custom instances of `RequestMappingHandlerMapping`, `RequestMappingHandlerAdapter`, or `ExceptionHandlerExceptionResolver`, and still keep the Spring Boot MVC customizations, you can declare a bean of type `WebMvcRegistrations` and use it to provide custom instances of those components.
+
+If you want to take complete control of Spring MVC, you can add your own `@Configuration` annotated with `@EnableWebMvc`, or alternatively add your own `@Configuration`-annotated `DelegatingWebMvcConfiguration` as described in the Javadoc of `@EnableWebMvc`.
 
 
 [[boot-features-spring-mvc-message-converters]]
@@ -4304,7 +4305,6 @@ The following code listing shows how to inject a Cassandra bean:
 
 		private CassandraTemplate template;
 
-		@Autowired
 		public MyBean(CassandraTemplate template) {
 			this.template = template;
 		}
@@ -4477,7 +4477,7 @@ You can also inject an auto-configured `LdapTemplate` instance as you would with
 
 [[boot-features-ldap-embedded]]
 ==== Embedded In-memory LDAP Server
-For testing purposes, Spring Boot supports auto-configuration of an in-memory LDAP server from https://www.ldap.com/unboundid-ldap-sdk-for-java[UnboundID].
+For testing purposes, Spring Boot supports auto-configuration of an in-memory LDAP server from https://ldap.com/unboundid-ldap-sdk-for-java/[UnboundID].
 To configure the server, add a dependency to `com.unboundid:unboundid-ldapsdk` and declare a configprop:spring.ldap.embedded.base-dn[] property, as follows:
 
 [source,properties,indent=0,configprops]
@@ -4773,8 +4773,17 @@ For instance, the following configuration creates `cache1` and `cache2` caches w
 NOTE: By default, a key prefix is added so that, if two separate caches use the same key, Redis does not have overlapping keys and cannot return invalid values.
 We strongly recommend keeping this setting enabled if you create your own `RedisCacheManager`.
 
-TIP: You can take full control of the configuration by adding a `RedisCacheConfiguration` `@Bean` of your own.
-This can be useful if you're looking for customizing the serialization strategy.
+TIP: You can take full control of the default configuration by adding a `RedisCacheConfiguration` `@Bean` of your own.
+This can be useful if you're looking for customizing the default serialization strategy.
+
+If you need more control over the configuration, consider registering a `RedisCacheManagerBuilderCustomizer` bean.
+The following example shows a customizer that configures a specific time to live for `cache1` and `cache2`:
+
+[source,java,indent=0]
+----
+include::{code-examples}/cache/RedisCacheManagerCustomizationExample.java[tag=configuration]
+----
+
 
 
 
@@ -4891,7 +4900,7 @@ By default, ActiveMQ creates a destination if it does not yet exist so that dest
 
 [[boot-features-artemis]]
 ==== Artemis Support
-Spring Boot can auto-configure a `ConnectionFactory` when it detects that https://activemq.apache.org/artemis/[Artemis] is available on the classpath.
+Spring Boot can auto-configure a `ConnectionFactory` when it detects that https://activemq.apache.org/components/artemis/[Artemis] is available on the classpath.
 If the broker is present, an embedded broker is automatically started and configured (unless the mode property has been explicitly set).
 The supported modes are `embedded` (to make explicit that an embedded broker is required and that an error should occur if the broker is not available on the classpath) and `native` (to connect to a broker using the `netty` transport protocol).
 When the latter is configured, Spring Boot configures a `ConnectionFactory` that connects to a broker running on the local machine with the default settings.
@@ -5662,9 +5671,6 @@ If https://hazelcast.com/[Hazelcast] is on the classpath and a suitable configur
 If you define a `com.hazelcast.config.Config` bean, Spring Boot uses that.
 If your configuration defines an instance name, Spring Boot tries to locate an existing instance rather than creating a new one.
 
-If you define a `com.hazelcast.config.Config` bean, Spring Boot uses that.
-If your configuration defines an instance name, Spring Boot tries to locate an existing instance rather than creating a new one.
-
 You could also specify the Hazelcast configuration file to use through configuration, as shown in the following example:
 
 [source,properties,indent=0,configprops]
@@ -5900,11 +5906,11 @@ If you have migrated your tests to JUnit 5, you should exclude JUnit 4 support, 
 === Test Scope Dependencies
 The `spring-boot-starter-test` "`Starter`" (in the `test` `scope`) contains the following provided libraries:
 
-* https://junit.org/junit5[JUnit 5] (including the vintage engine for backward compatibility with JUnit 4): The de-facto standard for unit testing Java applications.
+* https://junit.org/junit5/[JUnit 5] (including the vintage engine for backward compatibility with JUnit 4): The de-facto standard for unit testing Java applications.
 * {spring-framework-docs}testing.html#integration-testing[Spring Test] & Spring Boot Test: Utilities and integration test support for Spring Boot applications.
-* https://joel-costigliola.github.io/assertj/[AssertJ]: A fluent assertion library.
+* https://assertj.github.io/doc/[AssertJ]: A fluent assertion library.
 * https://github.com/hamcrest/JavaHamcrest[Hamcrest]: A library of matcher objects (also known as constraints or predicates).
-* https://mockito.github.io[Mockito]: A Java mocking framework.
+* https://site.mockito.org/[Mockito]: A Java mocking framework.
 * https://github.com/skyscreamer/JSONassert[JSONassert]: An assertion library for JSON.
 * https://github.com/jayway/JsonPath[JsonPath]: XPath for JSON.
 
@@ -6936,7 +6942,7 @@ NOTE: Make sure to not use the regular `@Import` annotation to import auto-confi
 
 [[boot-features-testing-spring-boot-applications-testing-user-configuration]]
 ==== User Configuration and Slicing
-If you <<using-boot-structuring-your-code, structure your code>> in a sensible way, your `@SpringBootApplication` class is <<boot-features-testing-spring-boot-applications-detecting-config, used by default>> as the configuration of your tests.
+If you <<using-spring-boot.adoc#using-boot-structuring-your-code, structure your code>> in a sensible way, your `@SpringBootApplication` class is <<boot-features-testing-spring-boot-applications-detecting-config, used by default>> as the configuration of your tests.
 
 It then becomes important not to litter the application's main class with configuration settings that are specific to a particular area of its functionality.
 
@@ -7695,7 +7701,7 @@ If you need the `Mockk` equivalent of the Mockito specific <<boot-features-testi
 [[boot-features-kotlin-resources-further-reading]]
 ==== Further reading
 * {kotlin-docs}[Kotlin language reference]
-* https://slack.kotlinlang.org/[Kotlin Slack] (with a dedicated #spring channel)
+* https://kotlinlang.slack.com/[Kotlin Slack] (with a dedicated #spring channel)
 * https://stackoverflow.com/questions/tagged/spring+kotlin[Stackoverflow with `spring` and `kotlin` tags]
 * https://try.kotlinlang.org/[Try Kotlin in your browser]
 * https://blog.jetbrains.com/kotlin/[Kotlin blog]

@@ -348,14 +348,15 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
-			<groupId>org.infinispan</groupId>
-			<artifactId>infinispan-spring5-embedded</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
 			<groupId>org.liquibase</groupId>
 			<artifactId>liquibase-core</artifactId>
 			<optional>true</optional>
+			<exclusions>
+				<exclusion>
+					<groupId>javax.xml.bind</groupId>
+					<artifactId>jaxb-api</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.mongodb</groupId>
@@ -798,6 +799,7 @@
 								<version-type>${version-type}</version-type>
 								<version>${project.version}</version>
 								<snippets>${project.build.directory}/generated-snippets/</snippets>
+								<spring-integration-version>${spring-integration.version}</spring-integration-version>
 							</attributes>
 						</configuration>
 						<dependencies>

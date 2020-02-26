@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2019 the original author or authors.
+ * Copyright 2012-2020 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -145,7 +145,7 @@ public abstract class AbstractRunMojo extends AbstractDependencyFilterMojo {
 	 * quotes. When specified, takes precedence over {@link #arguments}.
 	 * @since 2.2.3
 	 */
-	@Parameter(property = "spring-boot.run.arguments", readonly = true)
+	@Parameter(property = "spring-boot.run.arguments")
 	private String commandlineArguments;
 
 	/**
@@ -319,8 +319,8 @@ public abstract class AbstractRunMojo extends AbstractDependencyFilterMojo {
 	 * @return a {@link RunArguments} defining the application arguments
 	 */
 	protected RunArguments resolveApplicationArguments() {
-		RunArguments runArguments = (this.commandlineArguments != null) ? new RunArguments(this.commandlineArguments)
-				: new RunArguments(this.arguments);
+		RunArguments runArguments = (this.arguments != null) ? new RunArguments(this.arguments)
+				: new RunArguments(this.commandlineArguments);
 		addActiveProfileArgument(runArguments);
 		return runArguments;
 	}

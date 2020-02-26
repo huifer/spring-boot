@@ -87,6 +87,9 @@ public @interface SpringBootApplication {
 	String[] scanBasePackages() default {};
 
 	/**
+     *
+
+
 	 * Type-safe alternative to {@link #scanBasePackages} for specifying the packages to
 	 * scan for annotated components. The package of each class specified will be scanned.
 	 * <p>
